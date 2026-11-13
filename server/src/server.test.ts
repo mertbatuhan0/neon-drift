@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import http from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -113,6 +114,31 @@ test.describe("game server", { concurrency: 1 }, () => {
       await server.close();
     }
   });
+
+  test("the game screen is served on the same port", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "neon-web-"));
+    writeFileSync(path.join(dir, "index.html"), "<!doctype html><title>Neon</title>");
+    process.env.CLIENT_DIST = dir;
+    process.env.LEADERBOARD_PATH = path.join(mkdtempSync(path.join(tmpdir(), "neon-")), "board.sqlite");
+    delete process.env.BROKER_PASSWORD;
+    const { startServer } = await import("./server.js");
+    const server = await startServer(0);
+    try {
+      const home = await fetch(`http://127.0.0.1:${server.port}/`);
+      assert.equal(home.status, 200);
+      assert.match(await home.text(), /Neon/);
+      const health = await fetch(`http://127.0.0.1:${server.port}/health`);
+      const body = await health.json() as { ok: boolean };
+      assert.equal(body.ok, true);
+      const missing = await fetch(`http://127.0.0.1:${server.port}/assets/missing.js`);
+      assert.equal(missing.status, 404);
+      const escaped = await rawGet(server.port, "/%2e%2e/%2e%2e/etc/passwd");
+      assert.equal(escaped, 400);
+    } finally {
+      delete process.env.CLIENT_DIST;
+      await server.close();
+    }
+  });
 });
 
 let seq = 0;
@@ -120,6 +146,17 @@ let seq = 0;
 function send(ws: WebSocket, type: string, data: Record<string, unknown>) {
   seq += 1;
   ws.send(JSON.stringify({ kind: "command", type, cmdId: `t-${seq}`, ts: Date.now(), data }));
+}
+
+function rawGet(port: number, urlPath: string) {
+  return new Promise<number>((resolve, reject) => {
+    const req = http.request({ hostname: "127.0.0.1", port, path: urlPath, method: "GET" }, (res) => {
+      res.resume();
+      res.on("end", () => resolve(res.statusCode || 0));
+    });
+    req.on("error", reject);
+    req.end();
+  });
 }
 
 function delay(ms: number) {
