@@ -261,8 +261,7 @@ function cancelCountdown(room: Room, now: number) {
 
 function maybeStart(room: Room, now: number) {
   if (room.world.status !== "lobby") return;
-  const needed = room.mode === "time_attack" ? 1 : 2;
-  if (room.players.length < needed) return;
+  if (room.players.length < 1) return;
   if (!room.players.every((seat) => seat.ready)) return;
   room.world.status = "countdown";
   room.ended = false;
