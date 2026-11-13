@@ -14,13 +14,32 @@ An online multiplayer top-down racing game for 2-4 players. Players race neon ca
 - [Game events](game_events.md)
 - [Tech design](tech_design.md)
 
-## How to play
-1. Open the game screen in a browser: `https://<username>.github.io/neon-drift/`
-2. One player creates a room and shares the 4-letter room code.
-3. Each player starts their Wokwi controller project and the bridge (`/bridge`), enters the room code, and presses Ready.
-4. Race 3 laps. First across the line wins.
+## How to run
 
-The game server runs online at `wss://neon-drift-server.onrender.com` (placeholder, update after deployment). Nothing else needs to be installed except the Wokwi project and the bridge on the player's computer.
+The Dockerfile starts the game server and serves the game screen on the same port. Browsers and the Wokwi bridge connect there. Steering at 30 Hz stays on the WebSocket. Finished events (`room_joined`, `lap_completed`, `race_ended`, and the rest) are published to the course Redpanda broker when the broker variables below are set. The password is never committed.
+
+**Port:** `8787`, unless `PORT` is set.
+
+**Environment variables**
+
+| Name | Required | Purpose |
+|------|----------|---------|
+| `PORT` | no | Listen port. Default `8787`. |
+| `BROKER_URL` | for events | `https://edp-broker.codewithpeter.com` |
+| `BROKER_USER` | for events | `team3` |
+| `BROKER_PASSWORD` | for events | Team password from Slack. Set it on the server only. |
+| `BROKER_TOPIC` | no | Default `team3.events`. |
+| `LEADERBOARD_PATH` | no | SQLite file for best laps. |
+| `CLIENT_DIST` | no | Built game screen. The image uses `/app/client/dist`. |
+
+```bash
+docker build -t neon-drift .
+docker run --rm -p 8787:8787 --env-file .env neon-drift
+```
+
+`.env` is the copy of `.env.example` with `BROKER_PASSWORD` filled in. It stays off git. Startup logs `Neon Drift listening on 8787` and `broker on` or `broker off`. `GET /health` returns `{"ok":true}`.
+
+Players open `http://<vps-host>:8787`, one person creates a room, and the others join with the 4-letter code. The bridge on each laptop uses `GAME_SERVER_URL=ws://<vps-host>:8787`.
 
 ## Run locally
 

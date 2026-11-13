@@ -1,0 +1,14 @@
+.git
+node_modules
+**/node_modules
+dist
+**/dist
+data
+*.sqlite
+.env
+**/.env
+*.md
+!README.md
+__pycache__
+*.pyc
+.DS_Store
