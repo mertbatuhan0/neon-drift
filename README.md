@@ -6,7 +6,7 @@ An online multiplayer top-down racing game for 2-4 players. Players race neon ca
 | Name | Role |
 |------|------|
 | Batuhan Mert Elma | Game server & networking |
-| Muhsin Arsu | Game screen (web client) |
+| Muhsin Arsu | Game screen (Web client) |
 | Rita Gadlela | Wokwi controllers, bridge & docs |
 
 ## Docs
@@ -54,7 +54,7 @@ npm run dev
 - Game screen: `http://localhost:5173`
 - Game server: `ws://localhost:8787`
 
-Race rooms start when at least two drivers are ready. Time Attack starts with one. Drive with WASD or the arrow keys. Space uses a held boost or EMP. Shield and oil fire on pickup.
+Race rooms start when at least two drivers are ready. Time Attack starts with one. Drive with WASD or the arrow keys. Space uses a held boost or EMP. Shield and oil fire on pickups.
 
 ## Wheel bridge
 
