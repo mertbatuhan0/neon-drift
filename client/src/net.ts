@@ -3,15 +3,21 @@ import type { RaceResult, RoomState, ServerMessage, StateSnapshot } from "@neon/
 const TOKEN_KEY = "neon-drift-token";
 const NAME_KEY = "neon-drift-name";
 
+function devScreen() {
+  return location.port === "5173" || location.port === "4173";
+}
+
 export function wsUrl() {
   if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL;
   const proto = location.protocol === "https:" ? "wss" : "ws";
-  return `${proto}://${location.hostname}:8787`;
+  if (devScreen()) return `${proto}://${location.hostname}:8787`;
+  return `${proto}://${location.host}`;
 }
 
 export function httpUrl() {
   if (import.meta.env.VITE_HTTP_URL) return import.meta.env.VITE_HTTP_URL;
-  return `${location.protocol}//${location.hostname}:8787`;
+  if (devScreen()) return `${location.protocol}//${location.hostname}:8787`;
+  return location.origin;
 }
 
 export class Net {
