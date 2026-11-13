@@ -43,6 +43,15 @@ test.describe("game server", { concurrency: 1 }, () => {
       ada.ws.close();
       bea.ws.close();
 
+      const solo = await open(server.port);
+      send(solo.ws, "connect", { playerName: "Solo" });
+      await solo.wait((msg) => msg.type === "session_opened");
+      send(solo.ws, "create_room", { trackId: 1, maxPlayers: 4, mode: "race" });
+      await solo.wait((msg) => msg.type === "room_created");
+      send(solo.ws, "set_ready", { ready: true });
+      await solo.wait((msg) => msg.type === "countdown_ticked");
+      solo.ws.close();
+
       const cy = await open(server.port);
       send(cy.ws, "connect", { playerName: "Cy" });
       await cy.wait((msg) => msg.type === "session_opened");

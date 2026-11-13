@@ -54,7 +54,7 @@ npm run dev
 - Game screen: `http://localhost:5173`
 - Game server: `ws://localhost:8787`
 
-Race rooms start when at least two drivers are ready. Time Attack starts with one. Drive with WASD or the arrow keys. Space uses a held boost or EMP. Shield and oil fire on pickup.
+Press Ready to start. A race with one driver starts as soon as that driver is ready. A race with two or more waits until every driver is ready. Time Attack is solo. Drive with WASD or the arrow keys. Space uses a held boost or EMP. Shield and oil fire on pickup.
 
 ## Wheel bridge
 

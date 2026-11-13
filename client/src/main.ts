@@ -144,7 +144,7 @@ function paintModes() {
   });
   modeHelp.textContent = mode === "time_attack"
     ? "Solo. Three laps, best single lap hits the leaderboard."
-    : "Three laps. First across the line wins. Everyone else has 20 seconds.";
+    : "Three laps. One driver can start alone. With two or more, everyone must press Ready.";
   maxLabel.classList.toggle("hidden", mode === "time_attack");
   maxPlayers.classList.toggle("hidden", mode === "time_attack");
   paintTracks();
@@ -167,9 +167,12 @@ function paintRoom() {
   carPicker.querySelectorAll("button").forEach((button, index) => {
     button.classList.toggle("on", CAR_IDS[index] === mine?.carId);
   });
-  bridgeHint.textContent = mine
-    ? `Wheel: in bridge/.env set ROOM_CODE=${room.roomCode} and PLAYER_ID=${mine.playerName}, then run python bridge/bridge.py`
+  const waiting = room.mode === "race" && room.players.length === 1
+    ? "You are alone. Press Ready to start."
     : "";
+  bridgeHint.textContent = [waiting, mine
+    ? `Wheel: in bridge/.env set ROOM_CODE=${room.roomCode} and PLAYER_ID=${mine.playerName}, then run python bridge/bridge.py`
+    : ""].filter(Boolean).join(" ");
   playerList.replaceChildren(...room.players.map((player) => {
     const li = document.createElement("li");
     if (player.playerId === net.playerId) li.classList.add("me");
