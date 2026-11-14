@@ -10,6 +10,7 @@ function database(): DatabaseSync {
   const file = process.env.LEADERBOARD_PATH || path.resolve("data", "leaderboard.sqlite");
   fs.mkdirSync(path.dirname(file), { recursive: true });
   db = new DatabaseSync(file);
+  db.exec(`PRAGMA busy_timeout = 3000`);
   db.exec(`
     CREATE TABLE IF NOT EXISTS laps (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,16 +21,27 @@ function database(): DatabaseSync {
       created_at TEXT NOT NULL
     )
   `);
+  const columns = db.prepare(`PRAGMA table_info(laps)`).all() as { name: string }[];
+  if (!columns.some((column) => column.name === "lap")) {
+    db.exec(`ALTER TABLE laps ADD COLUMN lap INTEGER NOT NULL DEFAULT 0`);
+  }
   return db;
 }
 
-export function recordLap(playerName: string, trackId: number, lapTimeMs: number, mode: string) {
-  database()
-    .prepare(
-      `INSERT INTO laps (player_name, track_id, lap_time_ms, mode, created_at)
-       VALUES (?, ?, ?, ?, ?)`,
-    )
-    .run(playerName, trackId, Math.round(lapTimeMs), mode, new Date().toISOString());
+export function recordLap(playerName: string, trackId: number, lapTimeMs: number, mode: string, lap = 0) {
+  const db = database();
+  const time = Math.round(lapTimeMs);
+  const lapNo = Math.round(lap);
+  const existing = db.prepare(
+    `SELECT id FROM laps
+     WHERE player_name = ? AND track_id = ? AND lap_time_ms = ? AND mode = ? AND lap = ?`,
+  ).get(playerName, trackId, time, mode, lapNo);
+  if (existing) return false;
+  db.prepare(
+    `INSERT INTO laps (player_name, track_id, lap_time_ms, mode, created_at, lap)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+  ).run(playerName, trackId, time, mode, new Date().toISOString(), lapNo);
+  return true;
 }
 
 export function topLaps(trackId: number, limit = 10): LeaderboardRow[] {

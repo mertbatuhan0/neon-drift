@@ -16,7 +16,6 @@ import {
 } from "@neon/shared";
 import { publishEvent } from "./broker.js";
 import { scoreRace, type ScoreEntry } from "./score.js";
-import { recordLap } from "./store.js";
 import {
   carSpeed,
   freshCar,
@@ -352,11 +351,6 @@ function maybeRematch(room: Room, now: number) {
   broadcastState(room);
 }
 
-function plausibleLap(room: Room, lapMs: number) {
-  const fastest = (room.world.track.length / 520) * 1000;
-  return lapMs >= fastest && lapMs < 5 * 60 * 1000;
-}
-
 function applySimEvents(room: Room, events: ReturnType<typeof stepWorld>, now: number) {
   let finishPlace = room.world.cars.filter((car) => car.finished).length - events.filter((item) => item.type === "player_finished").length;
   for (const sim of events) {
@@ -373,14 +367,9 @@ function applySimEvents(room: Room, events: ReturnType<typeof stepWorld>, now: n
         playerName: sim.playerName,
         lap: sim.lap,
         lapTimeMs: sim.lapTimeMs,
+        trackId: room.world.track.id,
+        mode: room.mode,
       }));
-      if (plausibleLap(room, sim.lapTimeMs)) {
-        try {
-          recordLap(sim.playerName, room.world.track.id, sim.lapTimeMs, room.mode);
-        } catch (err) {
-          console.warn(`leaderboard write failed: ${err instanceof Error ? err.message : err}`);
-        }
-      }
     } else if (sim.type === "player_finished") {
       finishPlace += 1;
       emit(room, event("player_finished", {
