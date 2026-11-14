@@ -68,7 +68,7 @@ Transport: WebSocket over TLS (`wss://`) to the online server. All messages are 
 | `countdown_ticked` | `{ secondsLeft }` | 3-2-1 |
 | `race_started` | `{ startTs }` | Driving enabled |
 | `checkpoint_passed` | `{ playerId, checkpointId, lap }` | Validated by server |
-| `lap_completed` | `{ playerId, lap, lapTimeMs }` | |
+| `lap_completed` | `{ playerId, playerName, lap, lapTimeMs, trackId, mode }` | A finished lap. The leaderboard consumer stores plausible times. |
 | `player_finished` | `{ playerId, position, totalTimeMs }` | |
 | `race_ended` | `{ results[] }` | Final standings and points |
  

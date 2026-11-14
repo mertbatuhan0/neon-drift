@@ -8,8 +8,9 @@
     "client"
   ],
   "scripts": {
-    "dev": "concurrently -n server,client -c cyan,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
-    "start": "npm run start -w server",
+    "dev": "concurrently -n server,client,leaderboard -c cyan,magenta,green \"npm run dev -w server\" \"npm run dev -w client\" \"npm run leaderboard -w server\"",
+    "start": "concurrently -n server,leaderboard \"npm run start -w server\" \"npm run leaderboard -w server\"",
+    "leaderboard": "npm run leaderboard -w server",
     "test": "npm run test -w server",
     "typecheck": "npm run typecheck -w server && npm run typecheck -w client",
     "build": "npm run build -w client"
